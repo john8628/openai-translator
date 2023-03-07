@@ -46,9 +46,9 @@ export async function translate(query: TranslateQuery) {
     }
     if (query.detectFrom === query.detectTo) {
         if (isZh) {
-            prompt = '润色此句'
+            prompt = '作为专业的医疗人员，你将给该体检报告的人员给出相应的就医建议，你要回答的第一个问题是'
         } else {
-            prompt = 'polish this sentence'
+            prompt = 'As a professional medical staff, you will provide corresponding medical advice to the personnel who receive this physical examination report. The first question you need to answer is:'
         }
     }
     prompt = `${prompt}:\n\n"${query.text}" =>`
