@@ -1,19 +1,83 @@
-const apiKeyStorageKey = 'apiKey'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { TranslateMode } from '../content_script/translate'
+import { IBrowser } from './types'
 
-export async function getApiKey(): Promise<string> {
-    return new Promise((resolve) => {
-        chrome.storage.sync.get([apiKeyStorageKey], (items) => {
-            const apiKeys = items?.[apiKeyStorageKey] ?? ''
-            const keys = apiKeys.split(',') // Split the API keys into an array
-            keys.length === 0 ? resolve(apiKeys) : resolve(keys[Math.floor(Math.random() * keys.length)])
-        })
-    })
+export interface ISettings {
+    apiKeys: string
+    apiURL: string
+    autoTranslate: boolean
+    defaultTranslateMode: TranslateMode | 'nop'
+    defaultTargetLanguage: string
+    hotkey?: string
 }
 
-export async function setApiKey(apiKey: string) {
-    return new Promise<void>((resolve) => {
-        chrome.storage.sync.set({ [apiKeyStorageKey]: apiKey }, () => {
-            resolve()
-        })
-    })
+export const defaultAPIURL = 'https://api.openai.com'
+
+export const defaultAutoTranslate = false
+export const defaultTargetLanguage = 'zh-Hans'
+
+export async function getApiKey(): Promise<string> {
+    const settings = await getSettings()
+    const apiKeys = (settings.apiKeys ?? '').split(',').map((s) => s.trim())
+    return apiKeys[Math.floor(Math.random() * apiKeys.length)] ?? ''
+}
+
+// In order to let the type system remind you that all keys have been passed to browser.storage.sync.get(keys)
+const settingKeys: Record<keyof ISettings, number> = {
+    apiKeys: 1,
+    apiURL: 1,
+    autoTranslate: 1,
+    defaultTranslateMode: 1,
+    defaultTargetLanguage: 1,
+    hotkey: 1,
+}
+
+export async function getSettings(): Promise<ISettings> {
+    const browser = await getBrowser()
+    const items = await browser.storage.sync.get(Object.keys(settingKeys))
+
+    const settings = items as ISettings
+    if (!settings.apiKeys) {
+        settings.apiKeys = ''
+    }
+    if (!settings.apiURL) {
+        settings.apiURL = defaultAPIURL
+    }
+    if (settings.autoTranslate === undefined || settings.autoTranslate === null) {
+        settings.autoTranslate = defaultAutoTranslate
+    }
+    if (!settings.defaultTranslateMode) {
+        settings.defaultTranslateMode = 'translate'
+    }
+    if (!settings.defaultTargetLanguage) {
+        settings.defaultTargetLanguage = defaultTargetLanguage
+    }
+    return settings
+}
+
+export async function setSettings(settings: ISettings) {
+    const browser = await getBrowser()
+    await browser.storage.sync.set(settings)
+}
+
+export async function getBrowser(): Promise<IBrowser> {
+    if (isElectron()) {
+        return (await import('./electron-polyfill')).electronBrowser
+    }
+    if (isTauri()) {
+        return (await import('./tauri-polyfill')).tauriBrowser
+    }
+    return await require('webextension-polyfill')
+}
+
+export const isElectron = () => {
+    return navigator.userAgent.indexOf('Electron') >= 0
+}
+
+export const isTauri = () => {
+    return window['__TAURI__' as any] !== undefined
+}
+
+export const isDesktopApp = () => {
+    return isElectron() || isTauri()
 }

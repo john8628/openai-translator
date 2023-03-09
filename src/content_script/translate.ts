@@ -3,13 +3,17 @@ import * as utils from '../common/utils'
 import * as lang from './lang'
 import { fetchSSE } from './utils'
 
+export type TranslateMode = 'translate' | 'polishing' | 'summarize' | 'explain-code' | 'explain-indicators'
+
 export interface TranslateQuery {
     text: string
     detectFrom: string
     detectTo: string
+    mode: TranslateMode
     onMessage: (message: { content: string; role: string }) => void
     onError: (error: string) => void
     onFinish: (reason: string) => void
+    signal: AbortSignal
 }
 
 export interface TranslateResult {
@@ -19,39 +23,77 @@ export interface TranslateResult {
     error?: string
 }
 
+const chineseLangs = ['zh-Hans', 'zh-Hant', 'wyw', 'yue']
+
 export async function translate(query: TranslateQuery) {
+    const settings = await utils.getSettings()
     const apiKey = await utils.getApiKey()
     const headers = {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
     }
-    let prompt = `translate from ${lang.langMap.get(query.detectFrom) || query.detectFrom} to ${lang.langMap.get(query.detectTo) || query.detectTo
-        }`
-    if (query.detectTo === 'wyw' || query.detectTo === 'yue') {
-        prompt = `翻译成${lang.langMap.get(query.detectTo) || query.detectTo}`
+    const fromChinese = chineseLangs.indexOf(query.detectFrom) > 0
+    const toChinese = chineseLangs.indexOf(query.detectTo) > 0
+    let systemPrompt = 'You are a translation engine that can only translate text and cannot interpret it.'
+    let assistantPrompt = `translate from ${lang.langMap.get(query.detectFrom) || query.detectFrom} to ${
+        lang.langMap.get(query.detectTo) || query.detectTo
+    }`
+    switch (query.mode) {
+        case 'translate':
+            if (query.detectTo === 'wyw' || query.detectTo === 'yue') {
+                assistantPrompt = `翻译成${lang.langMap.get(query.detectTo) || query.detectTo}`
+            }
+            if (fromChinese) {
+                if (query.detectTo === 'zh-Hant') {
+                    assistantPrompt = '翻譯成台灣常用用法之繁體中文白話文'
+                } else if (query.detectTo === 'zh-Hans') {
+                    assistantPrompt = '翻译成简体白话文'
+                }
+            }
+            break
+        case 'polishing':
+            systemPrompt = 'Revise the following sentences to make them more clear, concise, and coherent.'
+            if (fromChinese) {
+                assistantPrompt = `使用 ${lang.langMap.get(query.detectFrom) || query.detectFrom} 语言润色此段文本`
+            } else {
+                assistantPrompt = `polish this text in ${lang.langMap.get(query.detectFrom) || query.detectFrom}`
+            }
+            break
+        case 'summarize':
+            systemPrompt = "You are a text summarizer, you can only summarize the text, don't interpret it."
+            if (toChinese) {
+                assistantPrompt = '用最简洁的语言使用中文总结此段文本'
+            } else {
+                assistantPrompt = `summarize this text in the most concise language and must use ${
+                    lang.langMap.get(query.detectTo) || query.detectTo
+                } language!`
+            }
+            break
+        case 'explain-code':
+            systemPrompt =
+                'You are a code explanation engine, you can only explain the code, do not interpret or translate it. Also, please report any bugs you find in the code to the author of the code.'
+            if (toChinese) {
+                assistantPrompt =
+                    '用最简洁的语言使用中文解释此段代码、正则表达式或脚本。如果内容不是代码，请返回错误提示。如果代码有明显的错误，请指出。'
+            } else {
+                assistantPrompt = `explain the provided code, regex or script in the most concise language and must use ${
+                    lang.langMap.get(query.detectTo) || query.detectTo
+                } language! If the content is not code, return an error message. If the code has obvious errors, point them out.`
+            }
+            break
+        case 'explain-indicators':
+            systemPrompt= 
+                'You are a physical examination indicator explanation engine, you can only explain the physical examination indicator, do not interpret or translate it. Also, please report any bugs you find in the code to the author of the code.'
+            if (toChinese) {
+                assistantPrompt =
+                    '你是全科医生，使用中文解释该体检报告中的各项指标。'
+            } else {
+                assistantPrompt = `explain the provided physical examination indicators in the most concise language and must use ${    
+                    lang.langMap.get(query.detectTo) || query.detectTo
+                } language!`
+            }
+            break
     }
-    const isZh =
-        query.detectFrom === 'wyw' ||
-        query.detectFrom === 'zh' ||
-        query.detectFrom === 'zh-Hans' ||
-        query.detectFrom === 'zh-Hant'
-    if (isZh) {
-        if (query.detectTo === 'zh-Hant') {
-            prompt = '翻译成繁体白话文'
-        } else if (query.detectTo === 'zh-Hans') {
-            prompt = '翻译成简体白话文'
-        } else if (query.detectTo === 'yue') {
-            prompt = '翻译成粤语白话文'
-        }
-    }
-    if (query.detectFrom === query.detectTo) {
-        if (isZh) {
-            prompt = '作为专业的医疗人员，你将给该体检报告的人员给出相应的就医建议，你要回答的第一个问题是'
-        } else {
-            prompt = 'As a professional medical staff, you will provide corresponding medical advice to the personnel who receive this physical examination report. The first question you need to answer is:'
-        }
-    }
-    prompt = `${prompt}:\n\n"${query.text}" =>`
     const body = {
         model: 'gpt-3.5-turbo',
         temperature: 0,
@@ -62,20 +104,24 @@ export async function translate(query: TranslateQuery) {
         messages: [
             {
                 role: 'system',
-                content:
-                    'You are doctors that can give some people advice of self-healthy.',
+                content: systemPrompt,
             },
-            { role: 'user', content: prompt },
+            {
+                role: 'assistant',
+                content: assistantPrompt,
+            },
+            { role: 'user', content: `"${query.text}"` },
         ],
         stream: true,
     }
 
     let isFirst = true
 
-    await fetchSSE('https://api.openai.com/v1/chat/completions', {
+    await fetchSSE(`${settings.apiURL}/v1/chat/completions`, {
         method: 'POST',
         headers,
         body: JSON.stringify(body),
+        signal: query.signal,
         onMessage: (msg) => {
             let resp
             try {
@@ -97,7 +143,7 @@ export async function translate(query: TranslateQuery) {
             const { content = '', role } = delta
             let targetTxt = content
 
-            if ((isFirst && targetTxt.startsWith('"')) || targetTxt.startsWith('「')) {
+            if (isFirst && targetTxt && ['“', '"', '「'].indexOf(targetTxt[0]) >= 0) {
                 targetTxt = targetTxt.slice(1)
             }
 

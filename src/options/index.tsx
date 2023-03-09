@@ -1,14 +1,15 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
-import { Popup } from '../popup'
+import { createRoot } from 'react-dom/client'
+import { Settings } from '../popup/Settings'
 
 const Options = () => {
-  return <Popup />
+    return <Settings />
 }
 
-ReactDOM.render(
-  <React.StrictMode>
-    <Options />
-  </React.StrictMode>,
-  document.getElementById('root'),
+const root = createRoot(document.getElementById('root') as HTMLElement)
+
+root.render(
+    <React.StrictMode>
+        <Options />
+    </React.StrictMode>
 )

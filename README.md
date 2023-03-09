@@ -1,18 +1,73 @@
+
 OpenAI Explaination of  Physical Examination Report Chrome Extension
 ----------------------------------
 最近刚做完体检，发现自己对于体检中的指标完全不清楚，于是想利用chatgpt做一个在线体检报告解读的想法；
 这段代码fork [bob-plugin-openai-translator](https://github.com/yetone/bob-plugin-openai-translator) 
 
+-----------------------------------------------------------
 
 
-# 安装方法
+
+
+# 既是浏览器插件也是跨平台桌面端应用！
+
+* 注：桌面端应用暂不支持划词，但是即将支持，敬请期待！
+
+<img width="560" src="https://user-images.githubusercontent.com/1206493/223899374-ff386436-63b8-4618-afdd-fed2e6b48d56.png" />
+
+
+# 使用截图
+
+<img width="800" src="https://user-images.githubusercontent.com/1206493/223200182-6a1d2a02-3fe0-4723-bdae-99d8b7212a33.gif" />
+
+# 特性
+
+1. 支持三种翻译模式：翻译、润色、总结
+2. 支持 55 种语言的相互翻译、润色和总结功能
+3. 支持实时翻译、润色和总结，以最快的速度响应用户，让翻译、润色和总结的过程达到前所未有的流畅和顺滑
+4. 支持自定义翻译文本
+5. 支持一键复制
+6. 支持 TTS
+7. 有桌面端应用，全平台（Windows + macOS + Linux）支持！
+
+# 桌面应用版安装方法
+
+1. 去 [Release](https://github.com/yetone/openai-translator/releases) 页面下载你对应的操作系统的 zip 包
+
+2. 下载完毕后解压 zip 包
+
+3. 打开解压后的文件
+
+* Windows 用户
+
+    Windows 用户双击解压出来的文件夹里的 `OpenAI Translator` 即可使用！
+    
+* macOS 用户
+
+    macOS 用户解压出来的是一个名字叫 `OpenAI Translator` 的应用，建议把解压出来的应用拖动到 `Applications` 目录中，macOS 用户第一次打开可能会遇到如下报错：
+
+    <img width="300" src="https://user-images.githubusercontent.com/1206493/223916804-45ce3f34-6a4a-4baf-a0c1-4ab5c54c521f.png" />
+
+    点击 `Cancel` 按钮，然后去 `Settings` -> `Privacy & Security` 页面，点击 `Open Anyway` 按钮，然后在弹出窗口里点击 `Open` 按钮即可，以后打开 `OpenAI Translator` 就再也不会有任何弹窗告警了 🎉
+
+    <img width="500" src="https://user-images.githubusercontent.com/1206493/223916970-9c99f15e-cf61-4770-b92d-4a78f980bb26.png" />
+
+    <img width="200" src="https://user-images.githubusercontent.com/1206493/223917449-ed1ac19f-c43d-4b13-9888-79ba46ceb862.png" />
+
+# 浏览器插件安装方法
+
+由于此插件还在 Chrome Store 审核中，所以现在需要手动下载和安装，敬请谅解。
+
+
 1. 去 Release 页面下载 [openai-translator-chrome-extension-*.zip](https://github.com/yetone/openai-translator/releases) 文件
 2. 解压缩下载后的 openai-translator-chrome-extension-*.zip 文件
 3. 打开 Chrome 的 Extension 页面
 
 <img width="600" src="https://user-images.githubusercontent.com/1206493/222926817-414b91ea-e90f-43f5-9fb3-e9b170b40ce8.png" />
 
-4. 在 Extension 页面右上角打开 Developer mode，然后点击左上角的 Load unpacked 按钮，选择刚刚解压缩的目录即可安装完毕！（如果有旧版本记得先删除旧版本！）
+4. 在 Extension 页面右上角打开 Developer mode，然后点击左上角的 Load unpacked 按钮，选择刚刚解压缩的目录即可安装完毕！
+
+    **注意：如果安装了旧版本，请务必先删除旧版本！**
 
 <img width="600" src="https://user-images.githubusercontent.com/1206493/223045238-22c9b79b-205d-4f6b-a147-cc7cf4149c83.png" />
 
