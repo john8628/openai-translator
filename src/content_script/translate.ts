@@ -63,7 +63,7 @@ export async function translate(query: TranslateQuery) {
             {
                 role: 'system',
                 content:
-                    'You are a translation engine that can only translate text and cannot interpret it.',
+                    'You are doctors that can give some people advice of self-healthy.',
             },
             { role: 'user', content: prompt },
         ],

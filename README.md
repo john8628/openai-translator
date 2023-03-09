@@ -1,25 +1,11 @@
-OpenAI Translator Chrome Extension
+OpenAI Explaination of  Physical Examination Report Chrome Extension
 ----------------------------------
+最近刚做完体检，发现自己对于体检中的指标完全不清楚，于是想利用chatgpt做一个在线体检报告解读的想法；
+这段代码fork [bob-plugin-openai-translator](https://github.com/yetone/bob-plugin-openai-translator) 
 
-我开发了一个 Bob 的插件 [bob-plugin-openai-translator](https://github.com/yetone/bob-plugin-openai-translator) 使用 ChatGPT API 在 macOS 上进行全局划词翻译，
-但是由于很多用户并不是 macOS 用户，所以特此开发了一个浏览器插件方便非 macOS 用户使用 ChatGPT 进行划词翻译。
 
-# 使用截图
-
-<img width="800" src="https://user-images.githubusercontent.com/1206493/223086113-ee0d002a-6150-4c9c-9d0c-8c0aad1478d1.gif" />
-
-# 特性
-
-1. 支持 55 种语言的相互翻译和润色功能
-2. 支持实时翻译和润色，以最快的速度响应用户，让翻译和润色的过程达到前所未有的流畅和顺滑
-3. 支持自定义翻译文本
-4. 支持一键复制
-5. 支持 TTS
 
 # 安装方法
-
-由于此插件还在 Chrome Store 审核中，所以现在需要手动下载和安装，敬请谅解。
-
 1. 去 Release 页面下载 [openai-translator-chrome-extension-*.zip](https://github.com/yetone/openai-translator/releases) 文件
 2. 解压缩下载后的 openai-translator-chrome-extension-*.zip 文件
 3. 打开 Chrome 的 Extension 页面
@@ -39,10 +25,3 @@ OpenAI Translator Chrome Extension
 <img width="600" src="https://user-images.githubusercontent.com/1206493/222958165-159719b4-28a5-44a4-b700-567786df7f03.png" />
 
 7. 刷新浏览器页面，即可享受丝滑般的划词翻译体验 🎉
-
-# 请作者喝一杯咖啡
-
-<div align="center">
-<img height="360" src="https://user-images.githubusercontent.com/1206493/220753437-90e4039c-d95f-4b6a-9a08-b3d6de13211f.png" />
-<img height="360" src="https://user-images.githubusercontent.com/1206493/220756036-d9ac4512-0375-4a32-8c2e-8697021058a2.png" />
-</div>
